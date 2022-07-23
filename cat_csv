@@ -1,0 +1,28 @@
+#!/bin/bash
+
+set -euo pipefail
+IFS=$'\n\t'
+
+set -o xtrace
+
+top_directory_name=$(mktemp --tmpdir=. --directory)
+trap "rm -fr $top_directory_name" EXIT
+
+working_directory_name=$(mktemp --tmpdir=$top_directory_name --directory)
+
+temp_file_names=$(
+  parallel --files --keep-order --tmpdir $working_directory_name --verbose --xargs xsv cat rows
+)
+
+temp_file_names_count=$(echo "$temp_file_names" | wc -l)
+
+while [[ $temp_file_names_count -gt 1 ]]
+do
+  working_directory_name=$(mktemp --tmpdir=$top_directory_name --directory)
+  temp_file_names=$(echo "$temp_file_names" |
+    parallel --files --keep-order --tempdir $working_directory_name --verbose --xargs xsv cat rows 
+  )
+  temp_file_names_count=$(echo "$temp_file_names" | wc -l)
+done
+
+cat $working_directory_name/* /dev/null
