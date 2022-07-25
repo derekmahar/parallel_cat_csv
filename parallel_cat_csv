@@ -12,7 +12,7 @@ working_directory_name=$(mktemp --tmpdir=$top_directory_name --directory)
 temp_file_names=$(
   parallel \
     --files \
-    --joblog cat_csv.log \
+    --joblog parallel_cat_csv.log \
     --keep-order \
     --max-args 5000 \
     --progress \
