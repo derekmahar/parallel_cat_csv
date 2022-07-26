@@ -6,26 +6,29 @@ trap 's=$?; echo >&2 "$0: Error on line "$LINENO": $BASH_COMMAND"; exit $s' ERR
 
 function cat_csv {
   local csv_files_file_name="$1"
-  local clean_up=no
-
-  if [[ -z "$csv_files_file_name" ]]
-  then
-    csv_files_file_name=$(mktemp)
-    cat > "$csv_files_file_name"
-    clean_up=yes
-  fi 
 
   # Copy the first CSV file, including its header row.
   cat $(head --lines=1 "$csv_files_file_name")
 
-  # Copy the remaining CSV files, absent their header rows. 
-  tail --lines=+2 "$csv_files_file_name" | xargs tail --lines=+2 --silent
-
-  if [[ $clean_up == "yes" ]]
-  then
-    rm -f $csv_files_file_name
-  fi
+  # Copy the remaining CSV files, absent their header rows.
+  # Ignore pipefail error. See https://stackoverflow.com/q/22464786/107158.
+  tail --lines=+2 "$csv_files_file_name" |
+    xargs tail --lines=+2 --silent 2>/dev/null \
+    || [[ $? -eq 125 ]] && true || exit $?
 }
 
-csv_files_file_name=${1:-}
+if (( $# > 1 ))
+then
+  csv_files_file_name=$(mktemp)
+  trap "rm -f $csv_files_file_name" EXIT
+  echo "$@" | tr ' ' '\n' > $csv_files_file_name
+elif (( $# == 1))
+then
+  csv_files_file_name=${1:-}
+else
+  csv_files_file_name=$(mktemp)
+  trap "rm -f $csv_files_file_name" EXIT
+  cat > "$csv_files_file_name"
+fi
+
 cat_csv "$csv_files_file_name"
