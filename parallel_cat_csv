@@ -2,7 +2,7 @@
 set -euo pipefail
 trap 's=$?; echo >&2 "$0: Error on line "$LINENO": $BASH_COMMAND"; exit $s' ERR
 
-set -o xtrace
+#set -o xtrace
 
 top_directory_name=$(mktemp --tmpdir=. --directory)
 trap "rm -fr $top_directory_name" EXIT
@@ -12,13 +12,10 @@ working_directory_name=$(mktemp --tmpdir=$top_directory_name --directory)
 temp_file_names=$(
   parallel \
     --files \
-    --joblog parallel_cat_csv.log \
     --keep-order \
-    --max-args 5000 \
-    --progress \
+    -m \
     --tmpdir $working_directory_name \
-    --verbose \
-    xsv cat rows
+    cat_csv
 )
 
 temp_file_names_count=$(echo "$temp_file_names" | wc -l)
@@ -31,15 +28,12 @@ do
     parallel \
       --files \
       --keep-order \
-      --line-buffer \
       --max-args 2 \
-      --progress \
       --tempdir $working_directory_name \
-      --verbose \
-      xsv cat rows
+      cat_csv {} /dev/null
   )
   temp_file_names_count=$(echo "$temp_file_names" | wc -l)
   rm -fr $old_working_directory_name
 done
 
-cat $working_directory_name/* /dev/null
+cat $temp_file_names || [[ $? -eq 141 ]] && true || exit $?
