@@ -14,13 +14,6 @@ function cat_csv {
   print_remaining_csv_files "$csv_files_file_name"
 }
 
-function print_files_skip_header {
-  # Print files from standard input absent their header rows.
-  # Ignore pipefail error. See https://stackoverflow.com/q/22464786/107158.
-  xargs --delimiter='\n' tail --lines=+2 --silent 2>/dev/null \
-    || [[ $? -eq 125 ]] && true || exit $?
-}
-
 function check_getopt_is_present {
   local exit_status=0
 
@@ -31,6 +24,13 @@ function check_getopt_is_present {
     echo 'Program "getopt" is not installed.  Please install package "util-linux".'
     exit 1
   fi
+}
+
+function print_files_skip_header {
+  # Print files from standard input absent their header rows.
+  # Ignore pipefail error. See https://stackoverflow.com/q/22464786/107158.
+  xargs --delimiter='\n' tail --lines=+2 --silent 2>/dev/null \
+    || [[ $? -eq 125 ]] && true || exit $?
 }
 
 function print_first_csv_file {
