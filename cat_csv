@@ -17,7 +17,7 @@ function cat_csv {
 function print_files_skip_header {
   # Print files from standard input absent their header rows.
   # Ignore pipefail error. See https://stackoverflow.com/q/22464786/107158.
-  xargs tail --lines=+2 --silent 2>/dev/null \
+  xargs --delimiter='\n' tail --lines=+2 --silent 2>/dev/null \
     || [[ $? -eq 125 ]] && true || exit $?
 }
 
@@ -37,7 +37,7 @@ function print_first_csv_file {
   local csv_files_file_name="$1"
 
   # Print first CSV file in file containing list of CSV file names.
-  cat $(cat "$csv_files_file_name" | select_first_line)
+  cat "$(cat "$csv_files_file_name" | select_first_line)"
 }
 
 function print_remaining_csv_files {
