@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+
+echo "cat_csv"
+ln --force --symbolic cat_csv.cat cat_csv
+hyperfine "find data -type f -name '*.csv' | sort | ./parallel_cat_csv"
+
+echo "csvtk"
+ln --force --symbolic cat_csv.csvtk cat_csv
+hyperfine "find data -type f -name '*.csv' | sort | ./parallel_cat_csv"
+
+echo "mlr"
+ln --force --symbolic cat_csv.mlr cat_csv
+hyperfine "find data -type f -name '*.csv' | sort | ./parallel_cat_csv"
+
+echo "qsv"
+ln --force --symbolic cat_csv.qsv cat_csv
+hyperfine "find data -type f -name '*.csv' | sort | ./parallel_cat_csv"
+
+echo "xsv"
+ln --force --symbolic cat_csv.xsv cat_csv
+hyperfine "find data -type f -name '*.csv' | sort | ./parallel_cat_csv"
+
+ln --force --symbolic cat_csv.cat cat_csv

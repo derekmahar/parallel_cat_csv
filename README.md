@@ -9,3 +9,4 @@
 * `cat_csv.mlr` requires [Miller](https://miller.readthedocs.io/).
 * `cat_csv.xsv` requires [`xsv`](https://github.com/BurntSushi/xsv).
 * `parallel_cat_csv` requires [GNU Parallel](https://www.gnu.org/software/parallel/).
+* `run_test` requires [`hyperfine`](https://github.com/sharkdp/hyperfine).

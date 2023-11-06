@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+function create_csv {
+  local target_path=$1
+  local count=$2
+
+  mkdir -p $target_path
+  csv_file_name="$target_path/$(printf "%07d" $count).csv"
+  printf "Column\n%d\n" $count > "$csv_file_name"
+}
+
+target_path="$1"
+total_file_count=$2
+
+for count in $(seq 1 $total_file_count)
+do
+  create_csv "$target_path" $count
+done
