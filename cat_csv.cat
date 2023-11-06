@@ -1,0 +1,125 @@
+#!/usr/bin/env bash
+set -euo pipefail
+trap 's=$?; echo >&2 "$0: Error on line "$LINENO": $BASH_COMMAND"; exit $s' ERR
+
+#set -o xtrace
+
+function cat_csv {
+  local csv_files_file_name="$1"
+
+  # Print first CSV file including its header row.
+  print_first_csv_file "$csv_files_file_name"
+
+  # Print remaining CSV files absent their header rows.
+  print_remaining_csv_files "$csv_files_file_name"
+}
+
+function check_getopt_is_present {
+  local exit_status=0
+
+  # Test for presence of program "getopt".
+  getopt --test > /dev/null || exit_status=$?
+  if [ $exit_status -ne 4 ]
+  then
+    echo 'Program "getopt" is not installed.  Please install package "util-linux".'
+    exit 1
+  fi
+}
+
+function print_files_skip_header {
+  # Print files from standard input absent their header rows.
+  # Ignore pipefail error. See https://stackoverflow.com/q/22464786/107158.
+  xargs --delimiter='\n' tail --lines=+2 --silent 2>/dev/null \
+    || [[ $? -eq 125 ]] && true || exit $?
+}
+
+function print_first_csv_file {
+  local csv_files_file_name="$1"
+
+  # Print first CSV file in file containing list of CSV file names.
+  cat "$(cat "$csv_files_file_name" | select_first_line)"
+}
+
+function print_remaining_csv_files {
+  local csv_files_file_name="$1"
+
+  cat "$csv_files_file_name" |
+    skip_first_line |
+    print_files_skip_header
+}
+
+function select_first_line {
+  head --lines=1
+}
+
+function skip_first_line {
+  # Print standard input starting at second line. 
+  tail --lines=+2
+}
+
+function usage() {
+  cat >&2 <<USAGE
+Usage: $0 [OPTIONS]
+  -f --csv-files-file-name  Name of file containing list of CSV file names.
+USAGE
+}
+
+check_getopt_is_present
+
+short_options=f:
+long_options=csv-files-file-name:
+exit_status=0
+parsed_options=$(getopt --options=$short_options --longoptions=$long_options --name "$BASH_SOURCE" -- "$@") || exit_status=$?
+
+if [ $exit_status -ne 0 ]
+then
+  echo "Error parsing command line options." >&2
+  usage
+  exit 1
+fi
+
+eval set -- "$parsed_options"
+
+csv_files_file_name=""
+
+while true
+do
+  case "$1" in
+    -f|--csv-files-file-name)
+      csv_files_file_name="$2"
+      shift 2
+      ;;
+    --)
+      shift
+      break
+      ;;
+    *)
+      echo "Programming error"
+      exit 3
+      ;;
+  esac
+done
+
+working_directory=$(mktemp --directory --tmpdir=.)
+all_csv_files_file_name=$(mktemp --tmpdir=$working_directory)
+trap "rm -fr $working_directory" EXIT
+
+if [[ -n $csv_files_file_name ]]
+then
+  if [[ -e "$csv_files_file_name" ]]
+  then
+    cat "$csv_files_file_name" > $all_csv_files_file_name
+  else
+    echo "$csv_files_file_name does not exist." >&2
+  fi
+fi
+
+if [[ $# -gt 0 ]]
+then
+  echo "$@" | tr ' ' '\n' >> $all_csv_files_file_name
+elif [[ -z $csv_files_file_name ]]
+then
+  cat >> $all_csv_files_file_name
+fi
+
+cat_csv "$all_csv_files_file_name"

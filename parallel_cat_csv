@@ -15,7 +15,7 @@ temp_file_names=$(
     --keep-order \
     -m \
     --tmpdir $working_directory_name \
-    cat_csv
+    ./cat_csv
 )
 
 temp_file_names_count=$(echo "$temp_file_names" | wc -l)
@@ -30,7 +30,7 @@ do
       --keep-order \
       --max-args 2 \
       --tempdir $working_directory_name \
-      cat_csv {} /dev/null
+      ./cat_csv {} /dev/null
   )
   temp_file_names_count=$(echo "$temp_file_names" | wc -l)
   rm -fr $old_working_directory_name
