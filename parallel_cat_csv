@@ -13,7 +13,7 @@ temp_file_names=$(
   parallel \
     --files \
     --keep-order \
-    -m \
+    --xargs \
     --tmpdir $working_directory_name \
     ./cat_csv
 )
@@ -28,9 +28,9 @@ do
     parallel \
       --files \
       --keep-order \
-      --max-args 2 \
       --tempdir $working_directory_name \
-      ./cat_csv {} /dev/null
+      --xargs \
+      ./cat_csv
   )
   temp_file_names_count=$(echo "$temp_file_names" | wc -l)
   rm -fr $old_working_directory_name
