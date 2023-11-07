@@ -1,23 +1,27 @@
 #!/usr/bin/env bash
 
-echo "cat_csv"
-ln --force --symbolic cat_csv.cat cat_csv
-hyperfine "find data -type f -name '*.csv' | sort | ./parallel_cat_csv"
+function run_test {
+  hyperfine --warmup 3 "find data -type f -name '*.csv' | sort | ./parallel_cat_csv"
+}
+
+echo "cat_custom"
+ln --force --symbolic cat_csv_custom cat_csv
+run_test
 
 echo "csvtk"
-ln --force --symbolic cat_csv.csvtk cat_csv
-hyperfine "find data -type f -name '*.csv' | sort | ./parallel_cat_csv"
+ln --force --symbolic cat_csv_csvtk cat_csv
+run_test
 
 echo "mlr"
-ln --force --symbolic cat_csv.mlr cat_csv
-hyperfine "find data -type f -name '*.csv' | sort | ./parallel_cat_csv"
+ln --force --symbolic cat_csv_mlr cat_csv
+run_test
 
 echo "qsv"
-ln --force --symbolic cat_csv.qsv cat_csv
-hyperfine "find data -type f -name '*.csv' | sort | ./parallel_cat_csv"
+ln --force --symbolic cat_csv_qsv cat_csv
+run_test
 
 echo "xsv"
-ln --force --symbolic cat_csv.xsv cat_csv
-hyperfine "find data -type f -name '*.csv' | sort | ./parallel_cat_csv"
+ln --force --symbolic cat_csv_xsv cat_csv
+run_test
 
-ln --force --symbolic cat_csv.cat cat_csv
+ln --force --symbolic cat_csv_cat cat_csv
